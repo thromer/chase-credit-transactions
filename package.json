@@ -1,0 +1,30 @@
+{
+  "name": "chase-credit-transactions",
+  "version": "1.0.0",
+  "description": "A module that reports details about credit transactions.",
+  "main": "dist/index.js",
+  "scripts": {
+    "build": "tsc",
+    "test": "jest"
+  },
+  "keywords": [
+    "transactions",
+    "credit",
+    "reporting"
+  ],
+  "author": "Your Name",
+  "license": "MIT",
+  "dependencies": {
+    "@js-temporal/polyfill": "^0.4.4",
+    "typescript": "^4.0.0"
+  },
+  "devDependencies": {
+    "@types/jest": "^27.0.0",
+    "jest": "^27.0.0",
+    "ts-jest": "^27.0.0"
+  },
+  "jest": {
+    "preset": "ts-jest",
+    "testEnvironment": "node"
+  }
+}
