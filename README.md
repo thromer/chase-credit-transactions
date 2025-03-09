@@ -1,7 +1,5 @@
 # Chase Credit Transactions
 
-testing DO NOT SUBMIT
-
 ## Overview
 TODO
 
