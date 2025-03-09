@@ -10,6 +10,8 @@ jobs:
     env:
       BLOCKED_PATTERN: "DO NOT SUBMIT"
     steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
       - name: Get changed files
         id: changed-files
         uses: tj-actions/changed-files@v45
