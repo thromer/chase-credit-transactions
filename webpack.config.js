@@ -1,9 +1,7 @@
 const path = require('path');
 
-module.exports = {
+const commonConfig = {
   entry: './src/index.ts',
-  mode: 'production',
-  devtool: 'source-map',
   module: {
     rules: [
       {
@@ -25,7 +23,29 @@ module.exports = {
     clean: true,
     sourceMapFilename: '[file].map'
   },
+};
+
+const productionConfig = {
+  ...commonConfig,
+  mode: 'production',
+  devtool: 'source-map',
   optimization: {
-    minimize: true
+    minimize: true,
+  },
+};
+
+const developmentConfig = {
+  ...commonConfig,
+  mode: 'development',
+  devtool: 'source-map',
+  optimization: {
+    minimize: false,
+  },
+};
+
+module.exports = (env, argv) => {
+  if (argv.mode === 'development') {
+    return developmentConfig;
   }
+  return productionConfig; // Default to production mode
 };
