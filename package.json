@@ -13,6 +13,7 @@
     "prepare": "npm run build",
     "prepublishOnly": "npm test",
     "build": "webpack",
+    "build:dev": "webpack --mode development",
     "test": "jest"
   },
   "keywords": [
