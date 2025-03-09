@@ -35,7 +35,7 @@ interface ApiResponse {
     profileId: number;
 }
 
-class TransactionService {
+export class TransactionService {
     // @ts-expect-error
     private defaultAccountId!: number;
     // @ts-expect-error
@@ -69,19 +69,26 @@ class TransactionService {
             "/svc/rl/accounts/l4/v1/app/data/list"
         );
 
-        if (!data.cache?.[0]?.response?.defaultAccountId) {
-            throw new Error(
-                "API response missing required field: defaultAccountId"
-            );
+        if (!data.cache || !data.cache.length) {
+            throw new Error("API response missing required cache data");
         }
+
         if (!data.profileId) {
             throw new Error("API response missing required field: profileId");
         }
 
-        this.defaultAccountId = data.cache[0].response.defaultAccountId;
+        // Find the first cache entry with a defaultAccountId
+        const accountEntry = data.cache.find(entry => 
+            entry.response && typeof entry.response.defaultAccountId === 'number'
+        );
+
+        if (!accountEntry) {
+            throw new Error("API response missing required field: defaultAccountId");
+        }
+
+        this.defaultAccountId = accountEntry.response.defaultAccountId;
         this.profileId = data.profileId;
     }
-
     async *getTransactions(
         startDate: Temporal.PlainDate,
         endDate: Temporal.PlainDate = Temporal.Now.plainDateISO(
@@ -147,17 +154,19 @@ class TransactionService {
         transaction.merchantOrderIdentifier = data.merchantOrderIdentifier;
     }
     
-    private async fetch<T>(method: string = 'GET', url: string, init?: RequestInit): Promise<T> {
-        const headers = {
+    private async fetch<T>(method: string = 'GET', url: string): Promise<T> {
+        const headers: Record<string, string> = {
             'x-jpmc-channel': 'id=C30',
             'x-jpmc-client-request-id': uuidv4(),
-            'x-jpmc-csrf-token': 'NONE',
-            ...(init?.headers || {})
+            'x-jpmc-csrf-token': 'NONE'
         };
+        
+        if (method === 'POST') {
+            headers['Content-Type'] = 'application/x-www-form-urlencoded; charset=UTF-8';
+        }
 
         const response = await this.rateLimiter(async () => {
             const resp = await this.fetcher(url, { 
-                ...init, 
                 method,
                 headers,
                 credentials: 'same-origin'
@@ -171,5 +180,3 @@ class TransactionService {
         return response.json();
     }
 }
-
-export { Transaction, TransactionService };
