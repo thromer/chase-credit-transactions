@@ -1,16 +1,22 @@
 name: Block DO NOT SUBMIT
 on: [pull_request]
+    branches:
+      - main
+
 jobs:
   block_do_not_submit:
     runs-on: ubuntu-latest
     env:
       BLOCKED_PATTERN: "DO NOT SUBMIT"
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
+      - name: Get changed files
+        id: changed-files
+        uses: tj-actions/changed-files@v45
       - name: Block DO NOT SUBMIT
         run: |
-          if grep -E -H "$BLOCKED_PATTERN" $(git diff --name-only origin/${{ github.event.pull_request.base.ref }}) /dev/null; then
-            echo "$BLOCKED_PATTERN found in the PR. Please remove it before merging."
-            exit 1
-          fi
+          for f in ${{ steps.changed-files.outputs.all_changed_files }}; do
+            if grep -E -H -n "$BLOCKED_PATTERN" "$f"; then
+              echo "$BLOCKED_PATTERN found in the PR. Please remove it before merging."
+              exit 1
+            fi
+          done
