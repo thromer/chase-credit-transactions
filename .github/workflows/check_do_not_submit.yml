@@ -1,5 +1,6 @@
 name: Block DO NOT SUBMIT
-on: [pull_request]
+on: 
+  pull_request:
     branches:
       - main
 
