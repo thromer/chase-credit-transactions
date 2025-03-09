@@ -1,6 +1,9 @@
 # Node.js dependencies
 node_modules/
 
+# Dist
+dist/
+
 # Logs
 logs/
 *.log

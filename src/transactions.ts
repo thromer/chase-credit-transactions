@@ -36,7 +36,9 @@ interface ApiResponse {
 }
 
 class TransactionService {
+    // @ts-expect-error
     private defaultAccountId!: number;
+    // @ts-expect-error
     private profileId!: number;
     private rateLimiter: (fn: () => Promise<any>) => Promise<any>;
     private fetcher: (

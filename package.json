@@ -1,29 +1,39 @@
 {
   "name": "chase-credit-transactions",
-  "version": "1.0.0",
+  "version": "0.0.1",
   "description": "A module that reports details about credit transactions.",
   "main": "dist/index.js",
+  "files": ["dist", "LICENSE"],
+  "types": "dist/index.d.ts",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/thromer/chase-credit-transactions.git"
+  },
   "scripts": {
-    "build": "tsc",
+    "prepare": "npm run build",
+    "prepublishOnly": "npm test",
+    "build": "webpack",
     "test": "jest"
   },
   "keywords": [
-    "transactions",
-    "credit",
-    "reporting"
+    "chase",
+    "transactions"
   ],
-  "author": "Your Name",
+  "author": "Theodore H. Romer",
   "license": "MIT",
   "dependencies": {
     "@js-temporal/polyfill": "^0.4.4",
-    "typescript": "^5.0.0",
     "uuid": "^11.1.0"
   },
   "devDependencies": {
-    "@types/jest": "^29.0.0",
+    "@types/jest": "^29.5.0",
     "@types/uuid": "^10.0.0",
-    "jest": "^29.0.0",
-    "ts-jest": "^29.0.0"
+    "jest": "^29.7.0",
+    "ts-jest": "^29.2.0",
+    "ts-loader": "^9.5.2",
+    "typescript": "^5.8.0",
+    "webpack": "^5.98.0",
+    "webpack-cli": "^6.0.1"
   },
   "jest": {
     "preset": "ts-jest",
