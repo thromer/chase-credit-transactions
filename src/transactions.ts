@@ -1,5 +1,7 @@
 import { Temporal } from "@js-temporal/polyfill";
 
+import { v4 as uuidv4 } from 'uuid'
+
 class Transaction {
     id: string;
     amount: number; // Positive for charges, negative for credits
@@ -25,7 +27,6 @@ class Transaction {
 }
 
 interface ApiResponse {
-    code: string;
     cache: Array<{
         response: {
             defaultAccountId: number;
@@ -37,7 +38,6 @@ interface ApiResponse {
 class TransactionService {
     private defaultAccountId!: number;
     private profileId!: number;
-    private initialized: boolean = false;
     private rateLimiter: (fn: () => Promise<any>) => Promise<any>;
     private fetcher: (
         input: RequestInfo,
@@ -62,10 +62,10 @@ class TransactionService {
     }
 
     private async initialize() {
-        const response = await this.fetcher(
-            "https://api.example.com/special-ids"
+        const data = await this.fetch<ApiResponse>(
+            "POST",
+            "/svc/rl/accounts/l4/v1/app/data/list"
         );
-        const data: ApiResponse = await response.json();
 
         if (!data.cache?.[0]?.response?.defaultAccountId) {
             throw new Error(
@@ -78,7 +78,6 @@ class TransactionService {
 
         this.defaultAccountId = data.cache[0].response.defaultAccountId;
         this.profileId = data.profileId;
-        this.initialized = true;
     }
 
     async *getTransactions(
@@ -87,10 +86,6 @@ class TransactionService {
             "America/New_York"
         )
     ): AsyncGenerator<Transaction> {
-        if (!this.initialized) {
-            await this.initialize();
-        }
-
         const today = Temporal.Now.plainDateISO("America/New_York");
 
         if (Temporal.PlainDate.compare(endDate, today) > 0) {
@@ -126,13 +121,10 @@ class TransactionService {
         endDate: Temporal.PlainDate,
         page: number
     ): Promise<Transaction[]> {
-        if (!this.initialized) {
-            await this.initialize();
-        }
-        const response = await this.fetcher(
+        const data = await this.fetch<any[]>(
+            'GET',
             `https://api.example.com/transactions?start=${startDate.toString()}&end=${endDate.toString()}&page=${page}`
         );
-        const data = await response.json();
         return data.map(
             (item: any) =>
                 new Transaction(
@@ -146,16 +138,36 @@ class TransactionService {
     }
 
     async addTransactionDetails(transaction: Transaction): Promise<void> {
-        if (!this.initialized) {
-            throw new Error("TransactionService not initialized");
-        }
-        const response = await this.rateLimiter(() =>
-            this.fetcher(
-                `https://api.example.com/transactions/${transaction.id}`
-            )
+        const data = await this.fetch<{merchantOrderIdentifier: string}>(
+            'GET',
+            `https://api.example.com/transactions/${transaction.id}`
         );
-        const data = await response.json();
         transaction.merchantOrderIdentifier = data.merchantOrderIdentifier;
     }
+    
+    private async fetch<T>(method: string = 'GET', url: string, init?: RequestInit): Promise<T> {
+        const headers = {
+            'x-jpmc-channel': 'id=C30',
+            'x-jpmc-client-request-id': uuidv4(),
+            'x-jpmc-csrf-token': 'NONE',
+            ...(init?.headers || {})
+        };
+
+        const response = await this.rateLimiter(async () => {
+            const resp = await this.fetcher(url, { 
+                ...init, 
+                method,
+                headers,
+                credentials: 'same-origin'
+            });
+            if (!resp.ok) {
+                throw new Error(`HTTP error! status: ${resp.status}`);
+            }
+            return resp;
+        });
+
+        return response.json();
+    }
 }
+
 export { Transaction, TransactionService };
