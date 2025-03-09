@@ -31,7 +31,7 @@ const transaction = new Transaction({
 
 console.log(transaction.getDetails());
 ```
-
+ 
 TODO rewrite
 
 ## API
